@@ -1,0 +1,153 @@
+---
+title: "metabarcoding with dada2: environment installation"
+output: 
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+# update VM configuration
+``` {bash}
+sudo apt-get update -y 
+sudo apt-get install -y libbz2-dev
+sudo apt-get install -y liblzma-dev
+```
+
+#package install
+Following instruction on https://benjjneb.github.io/dada2/dada-installation.html
+
+```{r package install}
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install(version = '3.11')
+BiocManager::install("dada2", version = "3.11")
+```
+
+
+## Phyloseq
+```{bash}
+sudo apt-get install -y libglpk-dev
+```
+
+```{r package install}
+BiocManager::install("phyloseq", version="3.11")
+```
+
+```{r}
+library(phyloseq); packageVersion("phyloseq")
+```
+
+## Biostrings
+
+```{r}
+BiocManager::install("Biostrings", version = "3.11")
+```
+
+```{r}
+library(Biostrings); packageVersion("Biostrings")
+```
+## ggplot2
+```{r}
+BiocManager::install("ggplot2", version = "3.11")
+```
+
+```{r}
+library(ggplot2); packageVersion("ggplot2")
+```
+
+```{r}
+theme_set(theme_bw())
+```
+## Installer les packages pour faire l'arbre
+```{r}
+BiocManager::install("phangorn")
+BiocManager::install("DECIPHER")
+```
+```{r}
+library(phangorn)
+library(DECIPHER)
+```
+
+
+
+## Pour regrouper les arbres phylogénétiques phyloseq
+```{r}
+install.packages("gridExtra")
+```
+
+```{r}
+library(gridExtra)
+```
+
+```{r}
+install.packages('grid.arrange')
+```
+
+```{r}
+library(grid.arrange)
+```
+
+## Encore des packages pour faire des analyses complémentaires
+```{r package install}
+.cran_packages <- c( "shiny","miniUI", "caret", "pls", "e1071", "ggplot2", "randomForest", "dplyr", "ggrepel", "nlme", "devtools",
+                  "reshape2", "PMA", "structSSI", "ade4",
+                  "ggnetwork", "intergraph", "scales")
+.github_packages <- c("jfukuyama/phyloseqGraphTest")
+.bioc_packages <- c("genefilter", "impute")
+# Install CRAN packages (if not already installed)
+.inst <- .cran_packages %in% installed.packages()
+if (any(!.inst)){
+  install.packages(.cran_packages[!.inst],repos = "http://cran.rstudio.com/")
+}
+.inst <- .github_packages %in% installed.packages()
+if (any(!.inst)){
+  devtools::install_github(.github_packages[!.inst])
+}
+
+.inst <- .bioc_packages %in% installed.packages()
+if(any(!.inst)){
+  source("http://bioconductor.org/biocLite.R")
+  biocLite(.bioc_packages[!.inst])
+}
+```
+
+## Peut être? Bon je comprends pas comment installer Bioconductor
+```{r}
+BiocManager::install(c("GenomicFeatures", "AnnotationDbi"))
+```
+```{r package install}
+BiocManager::install(.bioc_packages)
+```
+# Hiérarchiser les tests multiples
+## Installer le package
+```{r package install}
+BiocManager::install("DESeq2")
+```
+```{bash}
+wget https://cran.r-project.org/src/contrib/Archive/structSSI/structSSI_1.1.1.tar.gz
+```
+
+```{r package install}
+library(devtools)
+install_local("./structSSI_1.1.1.tar.gz")
+```
+
+# Github
+```{r}
+R.version.string
+```
+## Mettre à jour package R
+```{r}
+update.packages(ask = FALSE, checkBuilt = TRUE)
+```
+
+## Installer Git
+```{bash}
+sudo apt-get install git
+```
+
+```{r}
+library("usethis")
+use_git_config(user.name = "Lucile-Meyer", user.email = "lucilemeyer031@gmail.com")
+```
+

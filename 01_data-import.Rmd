@@ -1,0 +1,29 @@
+---
+title: "01_data-import"
+output:
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+##On a juste importer les données et les IP
+# Downloading the Standard Operating Procedure example data
+```{bash}
+wget https://mothur.s3.us-east-2.amazonaws.com/wiki/miseqsopdata.zip
+```
+
+#decompress the data
+```{bash}
+unzip miseqsopdata.zip
+```
+
+##Aller chercher la base de donnée Silva qu'on va avoir besoin pour assigner une taxonomie
+```{bash}
+wget https://zenodo.org/record/3986799/files/silva_nr99_v138_train_set.fa.gz
+```
+Ici on va importer la base de données de silva
+
+#Télécharger l'autre silva assignement
+```{bash}
+wget https://zenodo.org/record/3986799/files/silva_species_assignment_v138.fa.gz
+```
+Autre base de données de silva
