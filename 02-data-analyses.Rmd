@@ -1,0 +1,174 @@
+---
+title: "R Notebook"
+output: 
+  github_document:
+    toc: true
+    toc_depth: 2
+---
+
+## Dada2
+```{r}
+library("dada2")
+```
+
+## Importer le jeu de données
+```{r}
+path <- "~/MiSeq_SOP" # CHANGE ME to the directory containing the fastq files after unzipping.
+list.files(path)
+```
+Ici le jeu de données à été importé dans l’objet path. Nous y trouverons donc nos différentes données.
+
+## Extraction des variables
+```{r}
+fnFs <- sort(list.files(path, pattern="_R1_001.fastq", full.names = TRUE))
+fnRs <- sort(list.files(path, pattern="_R2_001.fastq", full.names = TRUE))
+sample.names <- sapply(strsplit(basename(fnFs), "_"), `[`, 1)
+```
+Il va falloir séparer les variables et les extraires à partir du fichier fastq. fnFs correspond aux reads Forward (R1) et fnRd corresponds aux reads Reverse (R2) Elles vont chacunes va recevoir les données avec list.file (dans une liste de fichier. c’est une fonction de R). path= c’est le nom d’un chemin qui mène à nos données. pattern = c’est une expression régulière c’est à dire que c’est quelque chose qui va être détecté quand on fait une recherche. On peut mettre des caractère indéfini (*) ou défini. On va chercher tout ce qui est en _R1_001.fastq ou _R2_001.fastq et les mettres respectivement dans fnFs et fnRs. Donc il va chercher dans le dossier MiSeq tous les read 1 et les mettre dans ce fichier.
+
+## Voir les profils de qualités
+```{r}
+plotQualityProfile(fnFs[c(1,4)])
+```
+```{r}
+plotQualityProfile(fnFs[1:2])
+```
+```{r}
+plotQualityProfile(fnRs[1:2])
+```
+ 
+ En ordonnée on a les scores de qualité, en gris se sont les hitmap. En abscisse il sagit de la longueur des reads (Illumina fait des reads de 250pb). On voit qu’on a des reads (en gris) sont en Q20. En vert c’est la position du score de qualité de chaque nucléotique. La ligne orange pointillé représente la zone où il y a 25% des scores de qualité qui sont les plus mauvais. La ligne rouge est le seuil où le score de qualité est de 10 . Un score de qualité c’est donc la probabilité que ce ne soit pas le bon nucléotide appelé par le séquenceur (Q30 1/1000 que ce ne soit pas le bon nucléotide et donc que ce soit une erreur). ici on ne regarde que les scores qualités des deux premiers reads dans le forward et le reverse.
+ 
+```{r}
+filtFs <- file.path(path, "filtered", paste0(sample.names, "_F_filt.fastq.gz"))
+filtRs <- file.path(path, "filtered", paste0(sample.names, "_R_filt.fastq.gz"))
+names(filtFs) <- sample.names
+names(filtRs) <- sample.names
+```
+On va placer nos données filtrées dans deux objets FiltFs pour les reads forward et FiltRs pour les reads reverse. Pour les classer on va demander de mettre dans FiltFs les reads portant le nom _F_filt.fastq.gz.
+
+## Filtrer les données
+```{r}
+out <- filterAndTrim(fnFs, filtFs, fnRs, filtRs, truncLen=c(240,160),
+              maxN=0, maxEE=c(2,2), truncQ=2, rm.phix=TRUE,
+              compress=TRUE, multithread=TRUE) # On Windows set multithread=FALSE
+head(out)
+```
+Dans l’objet out on va mettre nos données filtrées pour les deux reads ensemble afin de pouvoir faire nos analyses. TrucLen va permettre de tronquer les reads entre 160 et 240 pb afin qu’ils aient tous la même taille. En effet le R1 faisait environ 250 pb alors que le R2 n’en faisait que 160 pb. De plus si le score de qualité n’est pas bon pour un des deux reads alors celui ci sera enlevé ainsi que le read auquelle il est associé.
+
+## Modèle probabiliste d’apparition d’erreur à partir des Forward
+```{r}
+errF <- learnErrors(filtFs, multithread=TRUE)
+```
+
+## Modèle probabiliste d’apparition d’erreur à partir des Reverse
+```{r}
+errR <- learnErrors(filtRs, multithread=TRUE)
+```
+
+```{r}
+plotErrors(errF, nominalQ=TRUE)
+```
+Dada2 va essayer de créer un modèle d’erreur typique qui prends la probabilité pour qu’une base soit changé par une autre à tel ou tel position. Il va créer un modèle probabiliste d’erreur. LearnErrors va lire les erreurs. Le plot nous montrera le modèle d’erreur qu’à créé Dada2. Il va donc nous montrer la probabilité que tel ou tel base en donnera une autre en fonction du score qualité de nos paires de bases. Par exemple avec un score de qualité très haut, la probabilité que A donne un A est très forte (visible sur le graphique A2A). Sur le graphique A2C nous verrons la probabilité que A donne un C.
+
+## Appliquer notre modèle d'erreur
+```{r}
+dadaFs <- dada(filtFs, err=errF, multithread=TRUE)
+dadaRs <- dada(filtRs, err=errR, multithread=TRUE)
+```
+Ici nous allons créer un objet dada où on va y appliquer notre modèle d’erreur.
+
+```{r}
+dadaFs[[1]]
+```
+Cette commande va permettre de voir dans l’objet dadaFs ce qu’il y a dans le premier “tirroir”.
+
+
+## Formation de contig
+
+```{r}
+mergers <- mergePairs(dadaFs, filtFs, dadaRs, filtRs, verbose=TRUE)
+# Inspect the merger data.frame from the first sample
+head(mergers[[1]])
+```
+La commande mergePairs va pouvoir rassembler les paires de reads les unes avec les autres. Formation de contigs lorsque ce sera possible.
+
+## Contruction de la table d'observation
+
+```{r}
+seqtab <- makeSequenceTable(mergers)
+dim(seqtab)
+```
+
+Seqtab est une table avec en ligne le nom des echantillons, en colonne les différentes ASV1 (séquences) et le nombres de fois qu’on observe la séquence dans l’échantillon. dim va servir à regarder les dimensions de l’objets qu’on va créer.
+
+```{r}
+# Inspect distribution of sequence lengths
+table(nchar(getSequences(seqtab)))
+```
+Cette commande va permettre de regarder la distribution des tailles de séquences. on peut voir que les tailles tournent majoritairement autour de 253 pb.
+
+## Détection des chimères
+```{r}
+seqtab.nochim <- removeBimeraDenovo(seqtab, method="consensus", multithread=TRUE, verbose=TRUE)
+dim(seqtab.nochim)
+```
+Il est important de détecter les séquences chimères afin de les enlever de notre jeu de données. Ces séquences vont fausser notre analyses si elles restent présentes. Attention avant d’enlever les séquences chimères il faudra d’abord vérifier que nos séquences ne contiennent pas de primers, car ils seront comptés comme des chimère et notre séquence sera alors enlevée.
+
+```{r}
+sum(seqtab.nochim)/sum(seqtab)
+```
+Ici nous allons regardé le pourcentage de séquence chimère qui ont été enlevés. il y a donc 4% des échantillons de notre jeu de données qui étaient considérés comme des chimères et qui ont donc été enlevés.
+
+## Résumer des filtres qualités
+```{r}
+getN <- function(x) sum(getUniques(x))
+track <- cbind(out, sapply(dadaFs, getN), sapply(dadaRs, getN), sapply(mergers, getN), rowSums(seqtab.nochim))
+# If processing a single sample, remove the sapply calls: e.g. replace sapply(dadaFs, getN) with getN(dadaFs)
+colnames(track) <- c("input", "filtered", "denoisedF", "denoisedR", "merged", "nonchim")
+rownames(track) <- sample.names
+head(track)
+```
+Toutes les données ont été classées et rangées en fonction de leur appartenance à telle ou telle séquence.
+
+## Assignation d’une taxonomie
+
+```{r}
+taxa <- assignTaxonomy(seqtab.nochim, "~/silva_nr99_v138_train_set.fa.gz", multithread=TRUE)
+```
+Grâce à la base de données de silva nous allons pouvoir assigner une taxonomie à nos taxon, que nous rengerons dans l’objet taxa.
+
+## Autre assignation possible
+
+```{r}
+taxa2 <- addSpecies(taxa, "~/silva_species_assignment_v138.fa.gz")
+```
+On peut aussi faire une autre taxonomie en utilisant une autre base de données de silva.
+
+
+```{r}
+taxa.print <- taxa2 # Removing sequence rownames for display only
+rownames(taxa.print) <- NULL
+head(taxa.print)
+```
+Tableau des taxonomies de nos différentes ASV, grâce à la base de données silva. On remarqué que les afiliations ne vont pas forcément jusqu’au nom de l’espère. Elles s’arrêtent souvent à la famille et rarement au genre.
+
+## Evaluation de la précision
+
+```{r}
+unqs.mock <- seqtab.nochim["Mock",]
+unqs.mock <- sort(unqs.mock[unqs.mock>0], decreasing=TRUE) # Drop ASVs absent in the Mock
+cat("DADA2 inferred", length(unqs.mock), "sample sequences present in the Mock community.\n")
+```
+On nous indique ici qu’il y a 20 séquences uniques dans notre communauté.
+
+```{r}
+mock.ref <- getSequences(file.path(path, "HMP_MOCK.v35.fasta"))
+match.ref <- sum(sapply(names(unqs.mock), function(x) any(grepl(x, mock.ref))))
+cat("Of those,", sum(match.ref), "were exact matches to the expected reference sequences.\n")
+```
+Ici dada2 nous indique que ces 20 séquences uniques sont concordante avec les séquences de références.
+
+```{r}
+save.image(file="02_data-analysis-with-DADA2_FinalEnv")
+```
