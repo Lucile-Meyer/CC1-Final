@@ -91,6 +91,7 @@ table(tax_table(ps)[, "Phylum"], exclude = NULL)
     ##                        <NA> 
     ##                           6
 
+
 Nous pouvons visualiser les différents phylum avec l’abondance de
 chacun. Nous noterons que le phylum des Firmicutes est le plus
 important. Nous avons choisi d’exclure du tableaux les séquences qui
@@ -112,6 +113,7 @@ prevdf = data.frame(Prevalence = prevdf,
                     tax_table(ps))
 ```
 
+
 Nous allons ici calculer les prévalences de chaque phylum afin de savoir
 si il y a des phylum avec de faibles prévalences.
 
@@ -130,6 +132,7 @@ plyr::ddply(prevdf, "Phylum", function(df1){cbind(mean(df1$Prevalence),sum(df1$P
     ## 8               Proteobacteria  59.09091   650
     ## 9                  Tenericutes 234.00000   234
     ## 10             Verrucomicrobia 104.00000   104
+
 
 Nous remarquons donc que les phylums des Fusobacteria et des Deinococcus
 ont une faible prévelance par rapport aux autres données.
@@ -155,6 +158,7 @@ ps1
     ## tax_table()   Taxonomy Table:    [ 381 taxa by 6 taxonomic ranks ]
     ## phy_tree()    Phylogenetic Tree: [ 381 tips and 379 internal nodes ]
 
+
 On a donc refait un objet avec nos données filtrées, sans les séquences
 qui n’avaient pas d’affiliation taxonomique et sans les phylums peu
 présents.
@@ -172,6 +176,8 @@ ggplot(prevdf1, aes(TotalAbundance, Prevalence / nsamples(ps),color=Phylum)) +
 ```
 
 ![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-9-1.png)<!-- -->
+
+
 Chaque graphique représente un phylum. Chacun des points de chaque
 graphique, représente un taxa appartenant au phylum en question. On
 regarde donc la prévalence des échantillons en fonction de leur
@@ -187,6 +193,7 @@ prevalenceThreshold
 
     ## [1] 18
 
+
 Ici on va définir un seuil de prévelance de 5% dans nos échantillons. Il
 nous reste donc 18 phylums.
 
@@ -196,6 +203,7 @@ nous reste donc 18 phylums.
 keepTaxa = rownames(prevdf1)[(prevdf1$Prevalence >= prevalenceThreshold)]
 ps2 = prune_taxa(keepTaxa, ps)
 ```
+
 
 On va donc exécuter notre seuil de prévalence à nos données et on va
 faire un arbre phylogénétique en fonction de la taxonomie.
@@ -212,6 +220,8 @@ length(get_taxa_unique(ps2, taxonomic.rank = "Genus"))
 ps3 = tax_glom(ps2, "Genus", NArm = TRUE)
 ```
 
+
+
 Ici on va faire un arbre phylogénétique en impliquant les distances
 génétiques respectives entre chaque espèces. Ca peut s’apparenter au
 cultering par OTU.
@@ -220,6 +230,7 @@ cultering par OTU.
 h1 = 0.4
 ps4 = tip_glom(ps2, h = h1)
 ```
+
 
 Ici on va juste comparer les 3 arbres phylogénétiques que nous avons
 réalisé juste avant. h1 va permettre de fixer la distance génétique à
@@ -239,6 +250,7 @@ p4tree = plot_tree(ps4, method = "treeonly",
   theme(plot.title = element_text(size = multiPlotTitleTextSize))
 ```
 
+
 Ici on va juste mettre en page nos arbres phylogénétiques avec des
 légendes.
 
@@ -249,8 +261,9 @@ library(gridExtra)
 grid.arrange(nrow = 1, p2tree, p3tree, p4tree)
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-16-1.png)<!-- --> Le
-premier arbre correspond à l’arbre avec les taxons non filtrés, au
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-16-1.png)<!-- -->
+
+Le premier arbre correspond à l’arbre avec les taxons non filtrés, au
 milieu il sagit de l’arbre phylogénétique après filtration et avec
 assignation taxonomique. enfin le dernier arbre représente celui ayant
 intégré les distances phylogénétiques fixe. On remarque que les arbres
@@ -294,8 +307,9 @@ plotAfter = plot_abundance(ps3ra,"")
 grid.arrange(nrow = 1,  plotBefore, plotAfter)
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-19-1.png)<!-- --> On
-va tracer l’abondance avant et après le traitement des données. On
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-19-1.png)<!-- --> 
+
+On va tracer l’abondance avant et après le traitement des données. On
 remarque donc que dans l’abondance relative (qui prends en compte le
 nombre total de l’espèce en question par rapport au nombre d’individu
 total de toutes les espèces), sont plus faible que les abondances pour
@@ -310,8 +324,9 @@ psOrd = subset_taxa(ps3ra, Order == "Lactobacillales")
 plot_abundance(psOrd, Facet = "Genus", Color = NULL)
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-20-1.png)<!-- --> Ici
-nous regarderons les Lactobacillales, regroupés par sexe de la personne
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-20-1.png)<!-- --> 
+
+Ici nous regarderons les Lactobacillales, regroupés par sexe de la personne
 (donc femme et homme). On voit donc voir une différences sur les
 graphiques de Lactobacillus et Streptococcus. Il n’y a donc pas la même
 abondance entre ces deux genres. enrevanche il ne semble pas y avoir de
@@ -332,8 +347,9 @@ qplot(log10(rowSums(otu_table(ps))),binwidth=0.2) +
   xlab("Logged counts-per-sample")
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-22-1.png)<!-- --> Je
-ne comprends pas ce que montre les graphiques? Comment les analyser?
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-22-1.png)<!-- --> 
+
+Je ne comprends pas ce que montre les graphiques? Comment les analyser?
 
 # Faire une PCoA
 
@@ -357,8 +373,9 @@ plot_ordination(pslog, out.wuf.log, color = "age_binned") +
   coord_fixed(sqrt(evals[2] / evals[1]))
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-23-1.png)<!-- --> On
-réalise une PCoA en utilisant l’indice de dissimilarité de Bray-Curtis
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-23-1.png)<!-- --> 
+
+On réalise une PCoA en utilisant l’indice de dissimilarité de Bray-Curtis
 en ce basant sur la distance pondérée d’UniFrac. On obtient donc une
 ordination. On remarque qu’il y a quelques points aberrants qui
 semblerait être ceux en bas du graphique et à droite.
@@ -369,8 +386,9 @@ qplot(rel_abund[, 12], geom = "histogram",binwidth=0.05) +
   xlab("Relative abundance")
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-24-1.png)<!-- --> On
-peut donc verifier ces valeurs aberrantes. Pour ça les auteurs ont
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-24-1.png)<!-- --> 
+
+On peut donc verifier ces valeurs aberrantes. Pour ça les auteurs ont
 remarqué que pour deux échantillons, leur abondances relatives étaient
 de 90% à ce moment là alors que cet ASV, dans le reste de l’étude, avait
 une abondances relatives inférieur à 20%. Ils ont aussi remarqué que sa
@@ -414,6 +432,7 @@ plot_ordination(pslog, out.pcoa.log, color = "age_binned",
 ```
 
 ![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-28-1.png)<!-- -->
+
 Cette nouvelle PCoA est donc réalisée avec des données où les valeurs
 aberrantes ont été enlevées. Nous observons qu’il y a un effet de l’âge.
 
@@ -426,8 +445,9 @@ plot_ordination(pslog, out.dpcoa.log, color = "age_binned", label= "SampleID",
   coord_fixed(sqrt(evals[2] / evals[1]))
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-29-1.png)<!-- --> Je
-ne sais pas quoi déduire de cette DPCoA? Il y a là aussi une séparation
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-29-1.png)<!-- --> 
+
+Je ne sais pas quoi déduire de cette DPCoA? Il y a là aussi une séparation
 en fonction de l’âge?
 
 ``` r
@@ -435,8 +455,9 @@ plot_ordination(pslog, out.dpcoa.log, type = "species", color = "Phylum") +
   coord_fixed(sqrt(evals[2] / evals[1]))
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-30-1.png)<!-- --> Ici
-nous utilisons les valeurs pondorées sous UniFrac. Comme avec la
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-30-1.png)<!-- -->
+
+Ici nous utilisons les valeurs pondorées sous UniFrac. Comme avec la
 première DPCoA nous voyons qu’il y a bien un effet de l’âge. Les
 Firmicutes se retrouvent beaucoup chez les jeunes souris. On voit que
 chez des souris plus âgées il y a un mélange de différents phylums.
@@ -529,8 +550,9 @@ ggplot(abund_df %>%
   scale_color_brewer(palette = "Set2")
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-34-1.png)<!-- --> On
-observe ici la PCoA de l’abondance en fonction du rang. On voit que plus
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-34-1.png)<!-- --> 
+
+On observe ici la PCoA de l’abondance en fonction du rang. On voit que plus
 le rang est élevé plus l’abondance l’est aussi. Il est important de
 noter qu’il est plus simple d’utiliser les rangs que les abondances
 brutes.
@@ -588,6 +610,7 @@ ggplot() +
 ```
 
 ![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-36-1.png)<!-- -->
+
 Trois graphiques ont été réalisé en fonction de l’âge. On remarque que
 les abondances sont différentes en focntion de l’âge ce qui confirme les
 résultats obtenus avant.
@@ -642,8 +665,9 @@ ggplot() +
   theme(panel.border = element_rect(color = "#787878", fill = alpha("white", 0)))
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-38-1.png)<!-- --> Ici
-nous allons décider d’annoter seulement les 4 taxons les plus
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-38-1.png)<!-- --> 
+
+Ici nous allons décider d’annoter seulement les 4 taxons les plus
 importants, car c’est eux qui nous intéressent le plus dans cette étude.
 Nous observons ainsi deux biplots.
 
@@ -882,8 +906,9 @@ ggplot(net_graph, aes(x = x, y = y, xend = xend, yend = yend), layout = "fruchte
   guides(col = guide_legend(override.aes = list(size = .5)))
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-48-1.png)<!-- --> Les
-couleurs représentent les échantillons provenant des souris et les
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-48-1.png)<!-- --> 
+
+Les couleurs représentent les échantillons provenant des souris et les
 formes représentent la zone de vie d’où venait la souris. Nous voyons
 qu’il y a un regroupement des échantillons en fonction de la zone
 d’origine de la souris. La distribution des phylum dépends donc de
@@ -905,6 +930,7 @@ grid.arrange(ncol = 2,  plotNet1, plotPerm1)
 ```
 
 ![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-50-1.png)<!-- -->
+
 Nous effectuons d’abord un test à l’aide d’un MST avec l’indice de
 Jaccard. On vas donc attribuer aléatoirement des étiquettes tout en
 gardant la même structuration des familles chez les souris, car il a été
@@ -927,8 +953,9 @@ plotPerm2=plot_permutations(gt)
 grid.arrange(ncol = 2,  plotNet2, plotPerm2)
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-52-1.png)<!-- --> Ce
-graphique va permettre de voir que si deux échantillons sont proche l’un
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-52-1.png)<!-- --> 
+
+Ce graphique va permettre de voir que si deux échantillons sont proche l’un
 de l’autre c’est qu’ils viennent probablement du même environnement.
 
 # Linear modeling
@@ -1010,8 +1037,9 @@ ggplot(ps_samp %>% left_join(new_data)) +
 
     ## Joining, by = c("host_subject_id", "age_binned")
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-56-1.png)<!-- --> On
-a donc construit des blots, comprennant l’indice alpha de diversité et
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-56-1.png)<!-- --> 
+
+On a donc construit des blots, comprennant l’indice alpha de diversité et
 plus précisément celui de Shannon. On remarque que les indices de
 Shannon sont relativement élévés dans les différentes échantillons. En
 revanche il semblerait que chez les souris jeune, cet indice de Shannon
@@ -1222,8 +1250,9 @@ ggplot(abund_sums) +
   xlab("Total abundance within sample")
 ```
 
-![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-59-1.png)<!-- --> Le
-premier histogramme donne l’abondance totale de chaque échantillon après
+![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-59-1.png)<!-- --> 
+
+Le premier histogramme donne l’abondance totale de chaque échantillon après
 la transformation. On observe qu’après transformation l’histogramme est
 moins étalé et que les abondances sont plus élevées.
 
@@ -1437,6 +1466,7 @@ ggplot() +  geom_point(data = sample_info,
 ```
 
 ![](05_PhyloseqTuto_files/figure-gfm/unnamed-chunk-72-1.png)<!-- -->
+
 Nous réalisons enfin un triplot où nous observons les liens possible en
 fonction des échantillons, des OTU et des métabolites mais aussi du fait
 que la souris soit WT ou KO. Nous voyons que les différentes
