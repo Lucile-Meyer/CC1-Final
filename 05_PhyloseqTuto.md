@@ -347,7 +347,7 @@ out.wuf.log <- ordinate(pslog, method = "MDS", distance = "wunifrac")
 ```
 
     ## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
-    ## CCGAGCGTTATCCGGATTTATTGGGCGTAAAGCGAGCGCAGGCGGTTGGATAAGTCTGAAGTTAAAGGCTGTGGCTCAACCATAGTATGCTTTGGAAACTGTTCAACTTGAGTGCAGAAGGGGAGAGTGGAATTCCATGTGTAGCGGTGGAATGCGTAGATATATGGAGGAACACCGGTGGCGAAAGCGGCTCTCTGGTCTGTAACTGACGCTGAGGCTCGAAAGCGTGGGTAGC
+    ## GCAAGCGTTATCCGGAATGATTGGGCGTAAAGCGTCTGTAGGTGGCTTTTTAAGTTCGCCGTCAAATCCCAGGGCTCAACCCTGGACAGGCGGTGGAAACTACCAAGCTGGAGTACGGTAGGGGCAGAGGGAATTTCCGGTGGAGCGGTGAAATGCGTAGAGATCGGAAAGAACACCAACGGCGAAAGCACTCTGCTGGGCCGACACTGACACTGAGAGACGAAAGCTAGGGGAG
     ## -- in the phylogenetic tree in the data you provided.
 
 ``` r
@@ -448,7 +448,7 @@ out.wuf.log <- ordinate(pslog, method = "PCoA", distance ="wunifrac")
 ```
 
     ## Warning in UniFrac(physeq, weighted = TRUE, ...): Randomly assigning root as --
-    ## GCAAGCGTTATCCGGATTTACTGGGTGTAAAGGGAGCGTAGACGGTTGTGCAAGTCAGAAGTGAAAGCCCGGGGCTCAACTCCGGGACTGCTTTTGAAACTGTGAAACTGGAGTGCAGGAGAGGTAAGCGGAATTCCTGGTGTAGCGGTGAAATGCGTAGATATCAGGAGGAACACCAGTGGCGAAGGCGGCTTACTGGACTGTAACTGACGTTGAGGCTCGAAAGCGTGGGGAG
+    ## GCAAGCGTTATCCGGATTTACTGGGTGTAAAGGGAGCGTAGGCGGCGCGTTAAGTCTGATGTGAAAACCCGAGGCTCAACCACGGGAGTGCATTGGAAACTGGCGAGCTGGAGTGCCGGAGAGGTAAGCGGAATTCCTAGTGTAGCGGTGAAATGCGTAGATATTAGGAGGAACACCAGTGGCGAAGGCGGCTTACTGGACGGCAACTGACGCTGAGGCTCGAAAGCGTGGGGAG
     ## -- in the phylogenetic tree in the data you provided.
 
 ``` r
@@ -677,8 +677,8 @@ table(plsClasses, testing$age)
 
     ##            
     ## plsClasses  (0,100] (100,400]
-    ##   (0,100]        68         1
-    ##   (100,400]       2        46
+    ##   (0,100]        65         0
+    ##   (100,400]       8        48
 
 Nous allons donc appliquer notre prédiction à nos données et voir
 comment elles sont réparties. Le modèle de prédiction semble être assez
@@ -718,8 +718,8 @@ table(rfClasses, testing$age)
 
     ##            
     ## rfClasses   (0,100] (100,400]
-    ##   (0,100]        67         1
-    ##   (100,400]       3        46
+    ##   (0,100]        72         7
+    ##   (100,400]       1        41
 
 Il y a une autre méthode afin de classer les données en fonction de la
 souris et non de l’échantillon. Le package randomForest permet de le
